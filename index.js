@@ -1,9 +1,8 @@
 const express = require('express')
 
 const myApp = express()
-myApp.use(express.json())
 
-// controller
+// Controller
 class Project {
 
   constructor () {
@@ -16,6 +15,11 @@ class Project {
 
   addTask (id, task) {
     this.projects.forEach(p => { if (p.id === id) p.tasks.push(task)})
+  }
+
+  findById (id) {
+    const projectIndex = this.projects.findIndex(p => p.id === id)
+    return projectIndex >= 0 ? this.projects[projectIndex] : false
   }
 
   list () {
@@ -32,9 +36,19 @@ class Project {
   }
 }
 
-// Routes
+// Router
 const ProjectRouter = express.Router()
 const myProjects = new Project()
+
+const findProjectById = (req, res, next) => {
+  const { id } = req.params
+  if (!id) return res.status(400).send("Id can not be null or undefined")
+  
+  const project = myProjects.findById(id)
+  if (!project) return res.status(404).send("Project not found")
+
+  return next()
+}
 
 ProjectRouter
   .post('', (req, res) => {
@@ -42,13 +56,16 @@ ProjectRouter
     myProjects.create(id, title)
     return res.send()
   })
+  .get('', (req, res) => {
+    return res.status(200).json(myProjects.list())
+  })
+
+ProjectRouter
+  .use('/:id', findProjectById)
   .post('/:id/tasks', (req, res) => {
     const [id, title] = [req.params.id, req.body.title]
     myProjects.addTask(id, title)
     return res.send()
-  })
-  .get('', (req, res) => {
-    return res.status(200).json(myProjects.list())
   })
   .put('/:id', (req, res) => {
     const [id, title] = [req.params.id, req.body.title]
@@ -60,6 +77,15 @@ ProjectRouter
     return res.send()
   })
 
+// Server Config
+let COUNTER = 0
+const countRequests = (req, res, next) => {
+  COUNTER = COUNTER + 1
+  console.log(`Request number ${COUNTER}`)
+  next()
+}
 
+myApp.use(express.json())
+myApp.use(countRequests)
 myApp.use('/projects', ProjectRouter)
 myApp.listen(3000)
