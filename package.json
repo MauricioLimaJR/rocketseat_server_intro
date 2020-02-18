@@ -1,0 +1,16 @@
+{
+  "name": "gs_basic_server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/MauricioLimaJR/rocketseat_server_intro.git",
+  "author": "Maurício Lima <mauricio.lima@zeropay.io>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.2"
+  },
+
+  "scripts": {
+    "start": "nodemon index"
+  }
+}
