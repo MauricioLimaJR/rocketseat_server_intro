@@ -1,8 +1,19 @@
+/**
+ * GoStack Bootcamp
+ * Desafio 1: Conceitos do NodeJS
+ * @author Maurício Lima
+ * @see https://github.com/MauricioLimaJR/rocketseat_server_intro
+ */
+
 const express = require('express')
 
 const myApp = express()
 
-// Controller
+// Controller config
+
+/**
+ * Product Methods
+ */
 class Project {
 
   constructor () {
@@ -36,7 +47,8 @@ class Project {
   }
 }
 
-// Router
+// Router config
+
 const ProjectRouter = express.Router()
 const myProjects = new Project()
 
@@ -50,34 +62,53 @@ const findProjectById = (req, res, next) => {
   return next()
 }
 
+// Default Router
 ProjectRouter
+  /**
+   * Create and save a project
+   */
   .post('', (req, res) => {
     const { id, title } = req.body
     myProjects.create(id, title)
     return res.send()
   })
+  /**
+   * Get a list of all saved projects
+   */
   .get('', (req, res) => {
     return res.status(200).json(myProjects.list())
   })
 
+// Router for 'id' param urls
 ProjectRouter
+  // Verify if project exists by project ID 
   .use('/:id', findProjectById)
+  /**
+   * Save a project's task
+   */
   .post('/:id/tasks', (req, res) => {
     const [id, title] = [req.params.id, req.body.title]
     myProjects.addTask(id, title)
     return res.send()
   })
+  /**
+   * Update the project title
+   */
   .put('/:id', (req, res) => {
     const [id, title] = [req.params.id, req.body.title]
     myProjects.rename(id, title)
     return res.send()
   })
+  /**
+   * Remove a project by id
+   */
   .delete('/:id', (req, res) => {
     myProjects.remove(req.params.id)
     return res.send()
   })
 
 // Server Config
+
 let COUNTER = 0
 const countRequests = (req, res, next) => {
   COUNTER = COUNTER + 1
@@ -86,6 +117,8 @@ const countRequests = (req, res, next) => {
 }
 
 myApp.use(express.json())
+
 myApp.use(countRequests)
 myApp.use('/projects', ProjectRouter)
+
 myApp.listen(3000)
