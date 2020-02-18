@@ -21,7 +21,9 @@ class Project {
   }
   
   create (id, title) {
-    this.projects.push({ id, title, tasks: [] })
+    const project = { id, title, tasks: [] }
+    this.projects.push(project)
+    return project
   }
 
   addTask (id, task) {
@@ -54,11 +56,11 @@ const myProjects = new Project()
 
 const findProjectById = (req, res, next) => {
   const { id } = req.params
-  if (!id) return res.status(400).send("Id can not be null or undefined")
-  
+    
   const project = myProjects.findById(id)
-  if (!project) return res.status(404).send("Project not found")
+  if (!project) return res.status(400).json({ error: "Project not found" })
 
+  req.project = project
   return next()
 }
 
@@ -69,8 +71,7 @@ ProjectRouter
    */
   .post('', (req, res) => {
     const { id, title } = req.body
-    myProjects.create(id, title)
-    return res.send()
+    return res.json(myProjects.create(id, title))
   })
   /**
    * Get a list of all saved projects
@@ -89,7 +90,7 @@ ProjectRouter
   .post('/:id/tasks', (req, res) => {
     const [id, title] = [req.params.id, req.body.title]
     myProjects.addTask(id, title)
-    return res.send()
+    return res.json(req.project)
   })
   /**
    * Update the project title
@@ -97,7 +98,7 @@ ProjectRouter
   .put('/:id', (req, res) => {
     const [id, title] = [req.params.id, req.body.title]
     myProjects.rename(id, title)
-    return res.send()
+    return res.json(req.project)
   })
   /**
    * Remove a project by id
@@ -109,10 +110,8 @@ ProjectRouter
 
 // Server Config
 
-let COUNTER = 0
 const countRequests = (req, res, next) => {
-  COUNTER = COUNTER + 1
-  console.log(`Request number ${COUNTER}`)
+  console.count('Request number')
   next()
 }
 
